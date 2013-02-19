@@ -1,5 +1,5 @@
 /* ==========================================================
- * bootstrap-alert.js v2.2.2
+ * bootstrap-alert.js v2.0.1
  * http://twitter.github.com/bootstrap/javascript.html#alerts
  * ==========================================================
  * Copyright 2012 Twitter, Inc.
@@ -18,59 +18,61 @@
  * ========================================================== */
 
 
-!function ($) {
+!function( $ ){
 
-  "use strict"; // jshint ;_;
-
+  "use strict"
 
  /* ALERT CLASS DEFINITION
   * ====================== */
 
   var dismiss = '[data-dismiss="alert"]'
-    , Alert = function (el) {
+    , Alert = function ( el ) {
         $(el).on('click', dismiss, this.close)
       }
 
-  Alert.prototype.close = function (e) {
-    var $this = $(this)
-      , selector = $this.attr('data-target')
-      , $parent
+  Alert.prototype = {
 
-    if (!selector) {
-      selector = $this.attr('href')
-      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
-    }
+    constructor: Alert
 
-    $parent = $(selector)
+  , close: function ( e ) {
+      var $this = $(this)
+        , selector = $this.attr('data-target')
+        , $parent
 
-    e && e.preventDefault()
+      if (!selector) {
+        selector = $this.attr('href')
+        selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+      }
 
-    $parent.length || ($parent = $this.hasClass('alert') ? $this : $this.parent())
+      $parent = $(selector)
+      $parent.trigger('close')
 
-    $parent.trigger(e = $.Event('close'))
+      e && e.preventDefault()
 
-    if (e.isDefaultPrevented()) return
+      $parent.length || ($parent = $this.hasClass('alert') ? $this : $this.parent())
 
-    $parent.removeClass('in')
-
-    function removeElement() {
       $parent
-        .trigger('closed')
-        .remove()
+        .trigger('close')
+        .removeClass('in')
+
+      function removeElement() {
+        $parent
+          .trigger('closed')
+          .remove()
+      }
+
+      $.support.transition && $parent.hasClass('fade') ?
+        $parent.on($.support.transition.end, removeElement) :
+        removeElement()
     }
 
-    $.support.transition && $parent.hasClass('fade') ?
-      $parent.on($.support.transition.end, removeElement) :
-      removeElement()
   }
 
 
  /* ALERT PLUGIN DEFINITION
   * ======================= */
 
-  var old = $.fn.alert
-
-  $.fn.alert = function (option) {
+  $.fn.alert = function ( option ) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('alert')
@@ -82,18 +84,11 @@
   $.fn.alert.Constructor = Alert
 
 
- /* ALERT NO CONFLICT
-  * ================= */
-
-  $.fn.alert.noConflict = function () {
-    $.fn.alert = old
-    return this
-  }
-
-
  /* ALERT DATA-API
   * ============== */
 
-  $(document).on('click.alert.data-api', dismiss, Alert.prototype.close)
+  $(function () {
+    $('body').on('click.alert.data-api', dismiss, Alert.prototype.close)
+  })
 
-}(window.jQuery);
+}( window.jQuery );
